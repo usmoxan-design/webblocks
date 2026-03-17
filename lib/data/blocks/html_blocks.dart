@@ -99,7 +99,7 @@ Blockly.defineBlocksWithJsonArray([
 },
   {
     "type": "html_document",
-    "message0": "<!DOCTYPE html> %1 %2 </html>",
+    "message0": "<html> %1 %2 </html>",
     "args0": [
       {"type": "input_value", "name": "ATTR", "check": "Attribute"},
       {"type": "input_statement", "name": "CONTENT"}

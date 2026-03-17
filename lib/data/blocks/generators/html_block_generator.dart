@@ -5,7 +5,7 @@ case 'html_custom_code': {
 }
     case 'html_document': {
       var content = statementToHtml(block, 'CONTENT');
-      out = '<!DOCTYPE html>' + attrStr + '\n<html>\n' + content + '\n</html>';
+      out = '<html>' + attrStr + '\n' + content + '\n</html>';
       break;
     }
     case 'html_head': {

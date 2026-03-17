@@ -88,6 +88,7 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
     _aceController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFF2B2B2B))
+      ..addJavaScriptChannel('WebBlocksApp', onMessageReceived: _handleAppMessage)
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (url) {
           setState(() => _isAceLoaded = true);
@@ -122,6 +123,7 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
         .replaceAll('"', r'\"')
         .replaceAll('\n', r'\n')
         .replaceAll('\r', '');
+    // JS-dagi setCode funksiyasi ichida getValue tekshiruvi bor, cursor sakrab ketmasligi uchun.
     _aceController.runJavaScript('if(typeof setCode === "function") setCode("$safeCode", "$_mode");');
   }
 
@@ -133,6 +135,22 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
   void _handleAppMessage(JavaScriptMessage message) {
     try {
       final data = jsonDecode(message.message) as Map<String, dynamic>;
+      
+      // Handle manual code changes from Ace
+      if (data['type'] == 'code_change') {
+        final String newCode = data['code'] ?? '';
+        if (mounted) {
+          setState(() {
+            _file = _file.copyWith(codeContent: newCode, updatedAt: DateTime.now());
+            _generatedHtml = newCode;
+          });
+          _autoSave();
+          // Faqat previewni yangilaymiz agar html bo'lsa
+          if (_tabController.index == 2) _updatePreview();
+        }
+        return;
+      }
+
       if (data['type'] == 'error') return;
 
       final String xml = data['xml'] ?? '';
@@ -147,7 +165,12 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
         
         // HAR QANDAY O'ZGARISHDA AVTOMATIK SAQLASH
         _autoSave();
-        _updateAceCode();
+        
+        // Faqat Blockly tabida bo'lsak Ace dagi kodni yangilaymiz
+        if (_tabController.index == 0) {
+          _updateAceCode();
+        }
+        
         if (_tabController.index == 2) _updatePreview();
       }
     } catch (e) {}
@@ -224,6 +247,13 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
               icon: const Icon(Icons.redo, color: Color(0xFF1A73E8)),
               tooltip: 'Redo',
               onPressed: () => _blocklyController.runJavaScript('if(workspace) workspace.undo(true);'),
+            ),
+          ],
+          if (_isReady && _tabController.index == 1) ...[
+            IconButton(
+              icon: const Icon(Icons.cleaning_services_rounded, color: Color(0xFF1A73E8)),
+              tooltip: 'Kodni tozalash',
+              onPressed: () => _aceController.runJavaScript('if(typeof formatCode === "function") formatCode();'),
             ),
           ],
           IconButton(icon: _isSaving ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.check_rounded, color: Color(0xFF1A73E8)), onPressed: _saveFile),

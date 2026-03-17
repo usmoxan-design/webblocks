@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'html_blocks_config.dart';
 
-Future<String> getBlocklyHtmlTemplate(Map<String, dynamic> toolboxConfig) async {
+Future<String> getBlocklyHtmlTemplate(
+    Map<String, dynamic> toolboxConfig) async {
   return '''
 <!DOCTYPE html>
 <html>
@@ -539,6 +540,8 @@ Future<String> getAceEditorTemplate() async {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.37.5/ext-language_tools.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.37.5/theme-dracula.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.37.5/mode-html.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.37.5/mode-css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.37.5/mode-javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify-html.min.js"></script>
   <style>
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #2B2B2B; }
@@ -553,7 +556,7 @@ Future<String> getAceEditorTemplate() async {
     editor.setTheme("ace/theme/dracula");
     editor.session.setMode("ace/mode/html");
     editor.session.setUseWorker(false); // Fixes syntax highlighting on local WebViews
-    editor.setReadOnly(true); // Faqat ko'rish uchun
+    editor.setReadOnly(true); // Endi tahrirlash mumkin
     editor.setOptions({
       enableBasicAutocompletion: true,
       enableSnippets: true,
@@ -606,4 +609,3 @@ Future<String> getAceEditorTemplate() async {
 </html>
   ''';
 }
-
