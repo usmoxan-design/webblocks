@@ -71,12 +71,19 @@ class ProjectService {
         files.addAll(await _scanFiles(entity, folderId));
       } else if (entity is File) {
         final content = await entity.readAsString();
-        // Blockly XML ma'lumotlarini saqlash uchun alohida .xml fayllar bo'lishi mumkin
-        // Lekin hozircha soddalik uchun faqat kodni o'qiymiz
+        
+        // Blockly XML ma'lumotlarini saqlash uchun alohida yashirin .xml fayllarni o'qiymiz
+        String xmlContent = '';
+        final xmlFile = File('${dir.path}/.$name.xml');
+        if (await xmlFile.exists()) {
+          xmlContent = await xmlFile.readAsString();
+        }
+
         files.add(ProjectFile(
           id: name.hashCode.toString(),
           name: name,
           codeContent: content,
+          xmlContent: xmlContent,
           parentId: parentId,
         ));
       }

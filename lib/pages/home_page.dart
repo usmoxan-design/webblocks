@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
+        builder: (dialogContext, setState) {
           return AlertDialog(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.white,
@@ -166,10 +166,12 @@ class _HomePageState extends State<HomePage> {
                     ProjectFile(
                         id: const Uuid().v4(), 
                         name: 'style.css',
+                        xmlContent: selectedTemplate.cssXmlContent,
                         codeContent: selectedTemplate.cssContent),
                     ProjectFile(
                         id: const Uuid().v4(), 
                         name: 'script.js',
+                        xmlContent: selectedTemplate.jsXmlContent,
                         codeContent: selectedTemplate.jsContent),
                     ProjectFile(
                         id: const Uuid().v4(), name: 'assets', isFolder: true),
@@ -177,7 +179,7 @@ class _HomePageState extends State<HomePage> {
                   await _service.saveProject(project);
                   if (!mounted) return;
                   Navigator.push(
-                          context,
+                          context, // Endi HomePage konteksti ishlatiladi
                           MaterialPageRoute(
                               builder: (_) =>
                                   ProjectDetailsPage(project: project)))

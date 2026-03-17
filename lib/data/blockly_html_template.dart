@@ -542,7 +542,7 @@ Future<String> getAceEditorTemplate() async {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify-html.min.js"></script>
   <style>
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #2B2B2B; }
-    #editor { width: 100%; height: 100%; font-size: 15px; }
+    #editor { width: 100%; height: 100%; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -560,7 +560,7 @@ Future<String> getAceEditorTemplate() async {
       enableLiveAutocompletion: true,
       showPrintMargin: false,
       wrap: true,
-      fontSize: "14pt"
+      fontSize: "11pt"
     });
     
     function setCode(code, mode) {

@@ -214,6 +214,18 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
         ),
         title: Text('${_project.name} / ${_file.name}', style: GoogleFonts.inter(color: const Color(0xFF202124), fontSize: 14, fontWeight: FontWeight.w500)),
         actions: [
+          if (_isReady && _tabController.index == 0) ...[
+            IconButton(
+              icon: const Icon(Icons.undo, color: Color(0xFF1A73E8)),
+              tooltip: 'Undo',
+              onPressed: () => _blocklyController.runJavaScript('if(workspace) workspace.undo(false);'),
+            ),
+            IconButton(
+              icon: const Icon(Icons.redo, color: Color(0xFF1A73E8)),
+              tooltip: 'Redo',
+              onPressed: () => _blocklyController.runJavaScript('if(workspace) workspace.undo(true);'),
+            ),
+          ],
           IconButton(icon: _isSaving ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.check_rounded, color: Color(0xFF1A73E8)), onPressed: _saveFile),
         ],
         bottom: PreferredSize(

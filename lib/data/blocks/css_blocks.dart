@@ -21,6 +21,16 @@ final Map<String, dynamic> cssToolboxConfig = {
       "contents": [
         {"kind": "block", "type": "css_unit"}
       ]
+    },
+    {
+      "kind": "category", "name": "Matn va Shakl", "colour": "#9B59B6",
+      "contents": [
+        {"kind": "block", "type": "css_display"},
+        {"kind": "block", "type": "css_text_align"},
+        {"kind": "block", "type": "css_font_size"},
+        {"kind": "block", "type": "css_width"},
+        {"kind": "block", "type": "css_height"}
+      ]
     }
   ]
 };
@@ -109,6 +119,76 @@ Blockly.defineBlocksWithJsonArray([
     ],
     "output": "String",
     "colour": "#F5A623"
+  },
+  {
+    "type": "css_display",
+    "message0": "display : %1 ;",
+    "args0": [
+      {
+        "type": "field_dropdown",
+        "name": "VALUE",
+        "options": [
+          ["block", "block"],
+          ["inline", "inline"],
+          ["inline-block", "inline-block"],
+          ["flex", "flex"],
+          ["grid", "grid"],
+          ["none", "none"]
+        ]
+      }
+    ],
+    "colour": "#34A853",
+    "previousStatement": null,
+    "nextStatement": null
+  },
+  {
+    "type": "css_text_align",
+    "message0": "text-align : %1 ;",
+    "args0": [
+      {
+        "type": "field_dropdown",
+        "name": "VALUE",
+        "options": [
+          ["left", "left"],
+          ["center", "center"],
+          ["right", "right"],
+          ["justify", "justify"]
+        ]
+      }
+    ],
+    "colour": "#34A853",
+    "previousStatement": null,
+    "nextStatement": null
+  },
+  {
+    "type": "css_font_size",
+    "message0": "font-size : %1 ;",
+    "args0": [
+      {"type": "field_input", "name": "VALUE", "text": "16px"}
+    ],
+    "colour": "#34A853",
+    "previousStatement": null,
+    "nextStatement": null
+  },
+  {
+    "type": "css_width",
+    "message0": "width : %1 ;",
+    "args0": [
+      {"type": "field_input", "name": "VALUE", "text": "100%"}
+    ],
+    "colour": "#34A853",
+    "previousStatement": null,
+    "nextStatement": null
+  },
+  {
+    "type": "css_height",
+    "message0": "height : %1 ;",
+    "args0": [
+      {"type": "field_input", "name": "VALUE", "text": "100px"}
+    ],
+    "colour": "#34A853",
+    "previousStatement": null,
+    "nextStatement": null
   }
 ]);
 ''';
