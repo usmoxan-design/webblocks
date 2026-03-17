@@ -564,7 +564,7 @@ Future<String> getAceEditorTemplate() async {
       showPrintMargin: false,
       wrap: true,
       fontSize: "11pt"
-    });
+    }); 
     
     function setCode(code, mode) {
       if (!code) return;
