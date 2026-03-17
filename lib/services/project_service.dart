@@ -129,4 +129,14 @@ class ProjectService {
       await dir.delete(recursive: true);
     }
   }
+
+  Future<void> renameProject(String oldName, Project project) async {
+    final oldDir = Directory('$_projectsRoot/$oldName');
+    final newDir = Directory('$_projectsRoot/${project.name}');
+    
+    if (await oldDir.exists()) {
+      await oldDir.rename(newDir.path);
+    }
+    await saveProject(project);
+  }
 }

@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../services/custom_block_service.dart';
 
 class BlockMakerPage extends StatefulWidget {
   const BlockMakerPage({super.key});
@@ -14,11 +16,17 @@ class _BlockMakerPageState extends State<BlockMakerPage> {
   final _typeController = TextEditingController(text: 'custom_block');
   final _messageController = TextEditingController(text: 'block %1 %2');
   final _colorController = TextEditingController(text: '#1A73E8');
+  final _categoryController = TextEditingController(text: 'Custom');
   
   bool _hasPrevious = true;
   bool _hasNext = true;
   String? _outputType; // null, 'Attribute', 'Boolean'
   String _generatorType = 'HTML';
+  String _codePreview = '';
+  String? _validationError;
+  bool _isSaving = false;
+
+  final _service = CustomBlockService();
 
   List<Map<String, dynamic>> _args = [
     {'type': 'input_value', 'name': 'ATTR', 'check': 'Attribute'},
@@ -52,6 +60,90 @@ class _BlockMakerPageState extends State<BlockMakerPage> {
   void _updatePreview() {
     final jsonDef = _generateJsonDefinition();
     _previewController.runJavaScript('updateBlockDefinition($jsonDef);');
+    // Update code preview
+    setState(() {
+      _codePreview = _buildCodePreview();
+      _validationError = _validate();
+    });
+  }
+
+  String _buildCodePreview() {
+    // message0 dan tagni aniqlashga harakat qilamiz
+    final msg = _messageController.text.trim();
+    final type = _typeController.text.trim();
+    if (type.isEmpty || msg.isEmpty) return '';
+    // msgdan teg nomini olish
+    final tagMatch = RegExp(r'<(/?)([a-zA-Z][a-zA-Z0-9]*)').firstMatch(msg);
+    if (tagMatch != null) {
+      final tagName = tagMatch.group(2)!;
+      return '<$tagName ...attributes...>\n  ...content...\n</$tagName>';
+    }
+    // Tag topilmasa, generatordan kod misoli
+    return _generateGeneratorCode();
+  }
+
+  String? _validate() {
+    final type = _typeController.text.trim();
+    final msg = _messageController.text.trim();
+    if (type.isEmpty) return 'Blok turi (ID) bo\'sh bo\'lmasin!';
+    if (!RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*$').hasMatch(type)) {
+      return 'Blok ID faqat harf, raqam va _ dan iborat bo\'lsin!';
+    }
+    if (msg.isEmpty) return 'Xabar (message) bo\'sh bo\'lmasin!';
+    final argCount = RegExp(r'%\d+').allMatches(msg).length;
+    if (argCount > _args.length) {
+      return 'Messageda ${argCount} ta %N bor, lekin faqat ${_args.length} ta argument!';
+    }
+    // JSON validatsiyasi
+    try {
+      final jsonDef = _generateJsonDefinition();
+      jsonDecode(jsonDef);
+    } catch (e) {
+      return 'JSON xatosi: $e';
+    }
+    return null;
+  }
+
+  Future<void> _validateAndSave() async {
+    final error = _validate();
+    if (error != null) {
+      setState(() => _validationError = error);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    setState(() => _isSaving = true);
+    try {
+      final block = CustomBlock(
+        id: const Uuid().v4(),
+        type: _typeController.text.trim(),
+        jsonDefinition: _generateJsonDefinition(),
+        generatorCode: _generateGeneratorCode(),
+        category: _categoryController.text.trim().isNotEmpty 
+            ? _categoryController.text.trim() 
+            : 'Custom',
+        generatorType: _generatorType,
+      );
+      await _service.save(block);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('"${block.type}" bloki muvaffaqiyatli qo\'shildi!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Xatolik: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   String _generateJsonDefinition() {
@@ -195,6 +287,7 @@ class _BlockMakerPageState extends State<BlockMakerPage> {
                     _buildSectionTitle('Asosiy sozlamalar'),
                     _buildTextField('Blok turi (ID)', _typeController),
                     _buildTextField('Xabar (masalan: <b> %1 </b>)', _messageController),
+                    _buildTextField('Kategoriya nomi', _categoryController),
                     
                     Row(
                       children: [
@@ -269,6 +362,38 @@ class _BlockMakerPageState extends State<BlockMakerPage> {
                     _buildCodeDisplay('JSON Definition', _generateJsonDefinition()),
                     const SizedBox(height: 10),
                     _buildCodeDisplay('JS Generator (Avtomatik)', _generateGeneratorCode()),
+                    const SizedBox(height: 24),
+                    // Validation error
+                    if (_validationError != null)
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: Colors.red, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(_validationError!, style: const TextStyle(color: Colors.red, fontSize: 12))),
+                          ],
+                        ),
+                      ),
+                    ElevatedButton.icon(
+                      onPressed: _isSaving ? null : _validateAndSave,
+                      icon: _isSaving 
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.save_alt_rounded),
+                      label: Text(_isSaving ? 'Saqlanmoqda...' : 'Bloklarimga Qo\'shish'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -286,14 +411,42 @@ class _BlockMakerPageState extends State<BlockMakerPage> {
                 const Icon(Icons.visibility_outlined, size: 16, color: Color(0xFF5F6368)),
                 const SizedBox(width: 8),
                 Text('Jonli ko\'rinish', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF5F6368))),
+                const Spacer(),
+                Text(_generatorType, style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF1A73E8), fontWeight: FontWeight.w600)),
               ],
             ),
           ),
           Expanded(
+            flex: 2,
             child: !_isReady 
               ? const Center(child: CircularProgressIndicator())
               : WebViewWidget(controller: _previewController),
           ),
+          // Code preview
+          if (_codePreview.isNotEmpty) ...[  
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: const Color(0xFF2B2B2B),
+              child: Row(children: [
+                const Icon(Icons.code, color: Color(0xFF9AA0A6), size: 14),
+                const SizedBox(width: 8),
+                Text('Kod ko\'rinishi', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF9AA0A6))),
+              ]),
+            ),
+            Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(maxHeight: 120),
+              color: const Color(0xFF1E1E1E),
+              padding: const EdgeInsets.all(12),
+              child: SingleChildScrollView(
+                child: Text(
+                  _codePreview,
+                  style: const TextStyle(color: Color(0xFF9CDCFE), fontFamily: 'monospace', fontSize: 12),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

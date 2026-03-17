@@ -222,10 +222,11 @@ class _HomePageState extends State<HomePage> {
                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bunday nomli loyiha mavjud!')));
                    return;
                 }
+                final oldName = project.name;
                 Navigator.pop(ctx);
                 project.name = newName;
                 project.updatedAt = DateTime.now();
-                await _service.saveProject(project);
+                await _service.renameProject(oldName, project);
                 _loadProjects();
               } else {
                 Navigator.pop(ctx);

@@ -1,8 +1,30 @@
 import 'dart:convert';
 import 'html_blocks_config.dart';
+import '../services/custom_block_service.dart';
 
 Future<String> getBlocklyHtmlTemplate(
     Map<String, dynamic> toolboxConfig) async {
+  // Custom bloklarni yuklash
+  final customService = CustomBlockService();
+  final customDefs = await customService.getCombinedDefinitions();
+  final customGenerators = await customService.getCombinedGenerators();
+  // Custom kategoriyani toolboxga qo'shish
+  final fileType = toolboxConfig == htmlToolboxConfig ? 'HTML' : toolboxConfig == cssToolboxConfig ? 'CSS' : 'JS';
+  final customCategory = await customService.getCustomCategory(fileType);
+  Map<String, dynamic> finalToolbox = Map.from(toolboxConfig);
+  if (customCategory != null) {
+    final contents = List<dynamic>.from(finalToolbox['contents'] as List);
+    contents.add(customCategory);
+    finalToolbox = Map.from(finalToolbox)..['contents'] = contents;
+  }
+  // Custom generator switch-case larni combinedBlockDefinitions ichiga joylashtirish
+  // blockGenerators ni ikki qismga bo'lamiz - switch before 'default' va after
+  final String fullGenerators = combinedBlockDefinitions.contains('default:')
+    ? combinedBlockDefinitions.replaceFirst(
+        '    default:',
+        '    $customGenerators\n    default:'
+      )
+    : combinedBlockDefinitions + customGenerators;
   return '''
 <!DOCTYPE html>
 <html>
@@ -114,8 +136,11 @@ Future<String> getBlocklyHtmlTemplate(
           throw new Error('Blockly kutubxonasi yuklanmadi. Internet aloqasini tekshiring.');
         }
 
-        // Bloklar va generatorlarni yuklash
-        $combinedBlockDefinitions
+        // Bloklar va generatorlarni yuklash (custom bloklarsiz asosiy)
+        $fullGenerators
+        
+        // Custom blok definitsiyalari
+        $customDefs
 
         // ----------------------------------------------------
         // MAXSUS: Long Press orqali blok drag (document-da inject dan OLDIN)
@@ -208,7 +233,7 @@ Future<String> getBlocklyHtmlTemplate(
           currentPromptCallback = callback;
         });
 
-        var toolboxConfig = ${jsonEncode(toolboxConfig)};
+        var toolboxConfig = ${jsonEncode(finalToolbox)};
 
         workspace = Blockly.inject('blocklyDiv', {
           toolbox: toolboxConfig,
@@ -542,6 +567,7 @@ Future<String> getAceEditorTemplate() async {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.37.5/mode-html.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.37.5/mode-css.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.37.5/mode-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.37.5/ext-themelist.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify-html.min.js"></script>
   <style>
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #2B2B2B; }
@@ -551,9 +577,10 @@ Future<String> getAceEditorTemplate() async {
 <body>
   <div id="editor"></div>
   <script>
+    ace.config.set('basePath', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.37.5/');
     ace.require("ace/ext/language_tools");
     var editor = ace.edit("editor");
-    editor.setTheme("ace/theme/dracula");
+    editor.setTheme("ace/theme/xcode");
     editor.session.setMode("ace/mode/html");
     editor.session.setUseWorker(false); // Fixes syntax highlighting on local WebViews
     editor.setReadOnly(true); // Endi tahrirlash mumkin
@@ -565,7 +592,25 @@ Future<String> getAceEditorTemplate() async {
       wrap: false,
       fontSize: "11pt"
     }); 
-    
+
+    function setTheme(themeName) {
+      editor.setTheme("ace/theme/" + themeName);
+    }
+
+    function updateSettings(settings) {
+      if (settings.theme) {
+        editor.setTheme("ace/theme/" + settings.theme);
+      }
+      if (typeof settings.readOnly !== 'undefined') {
+        editor.setReadOnly(settings.readOnly);
+      }
+      if (typeof settings.fontSize !== 'undefined') {
+        editor.setFontSize(settings.fontSize);
+      }
+      if (typeof settings.wrap !== 'undefined') {
+        editor.session.setUseWrapMode(settings.wrap);
+      }
+    }    
     function setCode(code, mode) {
       if (!code) return;
       if (mode) {

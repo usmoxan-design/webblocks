@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/project_model.dart';
 import '../services/project_service.dart';
 import '../utils/html_editor.dart';
@@ -25,6 +26,55 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
   String _generatedHtml = '';
   String _mode = 'html';
   
+  // Ace Settings
+  String _aceTheme = 'xcode';
+  double _aceFontSize = 12.0;
+  bool _aceWrap = false;
+  bool _aceReadOnly = true;
+
+  final Map<String, String> _aceLightThemes = {
+    'chrome': 'Chrome',
+    'clouds': 'Clouds',
+    'crimson_editor': 'Crimson Editor',
+    'dawn': 'Dawn',
+    'dreamweaver': 'Dreamweaver',
+    'eclipse': 'Eclipse',
+    'github': 'GitHub',
+    'iplastic': 'IPlastic',
+    'katzenmilch': 'KatzenMilch',
+    'kuroir': 'Kuroir',
+    'solarized_light': 'Solarized Light',
+    'sqlserver': 'SQL Server',
+    'textmate': 'TextMate',
+    'tomorrow': 'Tomorrow',
+    'xcode': 'XCode'
+  };
+
+  final Map<String, String> _aceDarkThemes = {
+    'ambiance': 'Ambiance',
+    'chaos': 'Chaos',
+    'clouds_midnight': 'Clouds Midnight',
+    'cobalt': 'Cobalt',
+    'dracula': 'Dracula',
+    'gob': 'Greeon on Black',
+    'gruvbox': 'Gruvbox',
+    'idle_fingers': 'idle Fingers',
+    'kr_theme': 'krTheme',
+    'merbivore': 'Merbivore',
+    'merbivore_soft': 'Merbivore Soft',
+    'mono_industrial': 'Mono Industrial',
+    'monokai': 'Monokai',
+    'pastel_on_dark': 'Pastel on Dark',
+    'solarized_dark': 'Solarized Dark',
+    'terminal': 'Terminal',
+    'tomorrow_night': 'Tomorrow Night',
+    'tomorrow_night_blue': 'Tomorrow Night Blue',
+    'tomorrow_night_bright': 'Tomorrow Night Bright',
+    'tomorrow_night_eighties': 'Tomorrow Night 80s',
+    'twilight': 'Twilight',
+    'vibrant_ink': 'Vibrant Ink'
+  };
+  
   late WebViewController _blocklyController;
   late WebViewController _aceController;
   late WebViewController _previewController;
@@ -46,10 +96,20 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
     if (_isSupported) {
       _generatedHtml = _file.codeContent;
       _tabController = TabController(length: name.endsWith('.html') ? 3 : 2, vsync: this);
-      _initControllers();
+      _loadAceSettings().then((_) => _initControllers());
     } else {
       _isReady = true;
     }
+  }
+
+  Future<void> _loadAceSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _aceTheme = prefs.getString('ace_theme') ?? 'xcode';
+      _aceFontSize = prefs.getDouble('ace_font_size') ?? 12.0;
+      _aceWrap = prefs.getBool('ace_wrap') ?? false;
+      _aceReadOnly = prefs.getBool('ace_read_only') ?? true;
+    });
   }
 
   Future<void> _initControllers() async {
@@ -92,6 +152,7 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (url) {
           setState(() => _isAceLoaded = true);
+          _applyAceSettings();
           _updateAceCode();
         },
       ))
@@ -130,6 +191,153 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
   void _updatePreview() {
     if (!_file.name.endsWith('.html')) return;
     _previewController.loadHtmlString(_generatedHtml);
+  }
+
+  void _applyAceSettings() async {
+    if (!_isAceLoaded) return;
+    final settings = {
+      'theme': _aceTheme,
+      'fontSize': '${_aceFontSize}pt',
+      'wrap': _aceWrap,
+      'readOnly': _aceReadOnly,
+    };
+    _aceController.runJavaScript('if(typeof updateSettings === "function") updateSettings(${jsonEncode(settings)});');
+    
+    // Saqlash
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('ace_theme', _aceTheme);
+    await prefs.setDouble('ace_font_size', _aceFontSize);
+    await prefs.setBool('ace_wrap', _aceWrap);
+    await prefs.setBool('ace_read_only', _aceReadOnly);
+  }
+
+  void _showAceSettings() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Ace Sozlamalari', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold)),
+                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                  ],
+                ),
+                const Divider(),
+                ListTile(
+                  title: const Text('Tema'),
+                  subtitle: Text(_aceTheme.toUpperCase()),
+                  trailing: const Icon(Icons.palette_outlined),
+                  onTap: () {
+                    _showThemePicker(ctx, setModalState);
+                  },
+                ),
+                SwitchListTile(
+                  title: const Text('Tahrirlash rejimi'),
+                  subtitle: Text(_aceReadOnly ? 'Faqat ko\'rish' : 'Tahrirlash mumkin'),
+                  value: !_aceReadOnly,
+                  onChanged: (val) {
+                    setState(() => _aceReadOnly = !val);
+                    setModalState(() {});
+                    _applyAceSettings();
+                  },
+                ),
+                SwitchListTile(
+                  title: const Text('Qatorlarni bukish (Wrap)'),
+                  value: _aceWrap,
+                  onChanged: (val) {
+                    setState(() => _aceWrap = val);
+                    setModalState(() {});
+                    _applyAceSettings();
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      const Text('Shrift o\'lchami:'),
+                      Expanded(
+                        child: Slider(
+                          value: _aceFontSize,
+                          min: 8,
+                          max: 24,
+                          divisions: 16,
+                          label: '${_aceFontSize.toInt()}pt',
+                          onChanged: (val) {
+                            setState(() => _aceFontSize = val);
+                            setModalState(() {});
+                            _applyAceSettings();
+                          },
+                        ),
+                      ),
+                      Text('${_aceFontSize.toInt()}pt'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      ),
+    );
+  }
+
+  void _showThemePicker(BuildContext parentCtx, StateSetter setModalState) {
+    showDialog(
+      context: context,
+      builder: (ctx) => DefaultTabController(
+        length: 2,
+        child: AlertDialog(
+          title: const Text('Tema tanlang'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: Column(
+              children: [
+                const TabBar(
+                  labelColor: Color(0xFF1A73E8),
+                  unselectedLabelColor: Colors.grey,
+                  tabs: [Tab(text: 'Yorug\''), Tab(text: 'To\'q')],
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      _buildThemeList(_aceLightThemes, parentCtx, setModalState),
+                      _buildThemeList(_aceDarkThemes, parentCtx, setModalState),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Yopish'))],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeList(Map<String, String> themes, BuildContext parentCtx, StateSetter setModalState) {
+    return ListView(
+      children: themes.entries.map((e) => ListTile(
+        title: Text(e.value),
+        selected: _aceTheme == e.key,
+        trailing: _aceTheme == e.key ? const Icon(Icons.check, color: Color(0xFF1A73E8)) : null,
+        onTap: () {
+          setState(() => _aceTheme = e.key);
+          setModalState(() {});
+          _applyAceSettings();
+          Navigator.pop(context);
+        },
+      )).toList(),
+    );
   }
 
   void _handleAppMessage(JavaScriptMessage message) {
@@ -250,6 +458,11 @@ class _EditorPageState extends State<EditorPage> with TickerProviderStateMixin {
             ),
           ],
           if (_isReady && _tabController.index == 1) ...[
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, color: Color(0xFF1A73E8)),
+              tooltip: 'Ace Sozlamalari',
+              onPressed: _showAceSettings,
+            ),
             IconButton(
               icon: const Icon(Icons.cleaning_services_rounded, color: Color(0xFF1A73E8)),
               tooltip: 'Kodni tozalash',
