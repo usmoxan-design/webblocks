@@ -562,7 +562,7 @@ Future<String> getAceEditorTemplate() async {
       enableSnippets: true,
       enableLiveAutocompletion: true,
       showPrintMargin: false,
-      wrap: true,
+      wrap: false,
       fontSize: "11pt"
     }); 
     
