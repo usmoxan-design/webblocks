@@ -9,16 +9,27 @@ enum ProjectTemplate {
   portfolio,
   landing,
   contact,
+  blog,
+  shop,
 }
 
 extension ProjectTemplateExt on ProjectTemplate {
   String get name {
     switch (this) {
-      case ProjectTemplate.blank: return 'Bo\'sh loyiha (Blank)';
-      case ProjectTemplate.login: return 'Tizimga kirish (Login)';
-      case ProjectTemplate.portfolio: return 'Portfolio (Shaxsiy sahifa)';
-      case ProjectTemplate.landing: return 'Landing Page (Biznes)';
-      case ProjectTemplate.contact: return 'Bog\'lanish sahifasi (Contact)';
+      case ProjectTemplate.blank:
+        return 'Bo\'sh loyiha (Blank)';
+      case ProjectTemplate.login:
+        return 'Tizimga kirish (Login)';
+      case ProjectTemplate.portfolio:
+        return 'Portfolio (Shaxsiy sahifa)';
+      case ProjectTemplate.landing:
+        return 'Landing Page (Biznes)';
+      case ProjectTemplate.contact:
+        return 'Bog\'lanish sahifasi (Contact)';
+      case ProjectTemplate.blog:
+        return 'Blog Sahifasi';
+      case ProjectTemplate.shop:
+        return 'E-komers (Shop)';
     }
   }
 
@@ -232,6 +243,89 @@ extension ProjectTemplateExt on ProjectTemplate {
     </statement>
   </block>
 </xml>''';
+      case ProjectTemplate.blog:
+        return '''<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="html_document" x="20" y="20">
+    <statement name="CONTENT">
+      <block type="html_head">
+        <statement name="CONTENT">
+          <block type="html_title">
+            <field name="TITLE">Blog Sahifasi</field>
+          </block>
+        </statement>
+        <next>
+          <block type="html_body">
+            <value name="ATTR">
+              <block type="html_attribute">
+                <field name="ATTR_NAME">style</field>
+                <field name="ATTR_VALUE">margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f8f9fa;color:#333;line-height:1.6;</field>
+              </block>
+            </value>
+            <statement name="CONTENT">
+              <block type="html_custom_code">
+                <field name="CODE">&lt;header style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:60px 20px;text-align:center;"&gt;&lt;h1 style="margin:0;font-size:3rem;"&gt;Mening Blogim&lt;/h1&gt;&lt;p style="margin:10px 0 0;font-size:1.2rem;opacity:0.9;"&gt;Dasturlash va texnologiyalar haqida maqolalar&lt;/p&gt;&lt;/header&gt;</field>
+                <next>
+                  <block type="html_div">
+                    <value name="ATTR">
+                      <block type="html_attribute">
+                        <field name="ATTR_NAME">style</field>
+                        <field name="ATTR_VALUE">max-width:800px;margin:40px auto;padding:0 20px;display:grid;grid-template-columns:1fr;gap:30px;</field>
+                      </block>
+                    </value>
+                    <statement name="CONTENT">
+                      <block type="html_custom_code">
+                        <field name="CODE">&lt;article style="background:white;border-radius:10px;box-shadow:0 2px 15px rgba(0,0,0,0.1);padding:30px;transition:transform 0.3s ease,box-shadow 0.3s ease;"&gt;&lt;div style="color:#667eea;font-size:0.9rem;font-weight:bold;margin-bottom:10px;"&gt;MAY 15, 2024 • WEB DASTURLASH&lt;/div&gt;&lt;h2 style="margin:10px 0 15px;color:#2c3e50;font-size:2rem;"&gt;Flutter'da Responsive Dizayn&lt;/h2&gt;&lt;p style="color:#555;margin-bottom:20px;"&gt;Flutter'da responsive dizayn qanday qilib amalga oshiriladi? Bu maqolada MediaQuery, LayoutBuilder va Flexible widget'laridan foydalanishni o'rganamiz...&lt;/p&gt;&lt;a href="#" style="color:#667eea;text-decoration:none;font-weight:bold;display:inline-flex;align-items:center;gap:8px;transition:gap 0.3s ease;"&gt;Batafsil &gt;&lt;/a&gt;&lt;/article&gt;</field>
+                        <next>
+                          <block type="html_custom_code">
+                            <field name="CODE">&lt;article style="background:white;border-radius:10px;box-shadow:0 2px 15px rgba(0,0,0,0.1);padding:30px;transition:transform 0.3s ease,box-shadow 0.3s ease;"&gt;&lt;div style="color:#667eea;font-size:0.9rem;font-weight:bold;margin-bottom:10px;"&gt;MAY 10, 2024 • DATABASE&lt;/div&gt;&lt;h2 style="margin:10px 0 15px;color:#2c3e50;font-size:2rem;"&gt;Firebase Cloud Firestore&lt;/h2&gt;&lt;p style="color:#555;margin-bottom:20px;"&gt;NoSQL ma'lumotlar bazasi sifatida Cloud Firestore'niki afzalliklari va qo'llash usullari. Real-time sinxronizatsiya va offline rejim...&lt;/p&gt;&lt;a href="#" style="color:#667eea;text-decoration:none;font-weight:bold;display:inline-flex;align-items:center;gap:8px;transition:gap 0.3s ease;"&gt;Batafsil &gt;&lt;/a&gt;&lt;/article&gt;</field>
+                            <next>
+                              <block type="html_custom_code">
+                                <field name="CODE">&lt;article style="background:white;border-radius:10px;box-shadow:0 2px 15px rgba(0,0,0,0.1);padding:30px;transition:transform 0.3s ease,box-shadow 0.3s ease;"&gt;&lt;div style="color:#667eea;font-size:0.9rem;font-weight:bold;margin-bottom:10px;"&gt;MAY 5, 2024 • STATE MANAGEMENT&lt;/div&gt;&lt;h2 style="margin:10px 0 15px;color:#2c3e50;font-size:2rem;"&gt;Provider vs Bloc&lt;/h2&gt;&lt;p style="color:#555;margin-bottom:20px;"&gt;Flutter'da state management uchun eng mashhur usullarni taqqoslash. Providerning oddiyligi va Blocning skaliyatsiyasi...&lt;/p&gt;&lt;a href="#" style="color:#667eea;text-decoration:none;font-weight:bold;display:inline-flex;align-items:center;gap:8px;transition:gap 0.3s ease;"&gt;Batafsil &gt;&lt;/a&gt;&lt;/article&gt;</field>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                  </block>
+                </next>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>''';
+      case ProjectTemplate.shop:
+        return '''<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="html_document" x="20" y="20">
+    <statement name="CONTENT">
+      <block type="html_head">
+        <statement name="CONTENT">
+          <block type="html_title">
+            <field name="TITLE">Shop</field>
+          </block>
+        </statement>
+        <next>
+          <block type="html_body">
+            <value name="ATTR">
+              <block type="html_attribute">
+                <field name="ATTR_NAME">style</field>
+                <field name="ATTR_VALUE">margin:0;font-family:sans-serif;background:#f5f5f5;</field>
+              </block>
+            </value>
+            <statement name="CONTENT">
+              <block type="html_custom_code">
+                <field name="CODE"><header style="background:#1a73e8;color:white;padding:20px;text-align:center;"><h1>Mening Do'konim</h1></header><div style="padding:20px;max-width:1200px;margin:auto;"><h2>Mahsulotlar</h2><p>Bu yerda mahsulotlar ko'rsatiladi.</p></div></field>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>''';
       default:
         return '<xml xmlns="https://developers.google.com/blockly/xml"><block type="html_document" x="20" y="20"><statement name="CONTENT"><block type="html_head"><statement name="CONTENT"><block type="html_title"><field name="TITLE">Bo\'sh Sahifa</field></block></statement><next><block type="html_body"><statement name="CONTENT"><block type="html_h1"><field name="TEXT">Salom Dunyo!</field></block></statement></block></next></block></statement></block></xml>';
     }
@@ -247,6 +341,10 @@ extension ProjectTemplateExt on ProjectTemplate {
         return '<html><head><title>Landing Page</title></head><body style="margin:0;font-family:sans-serif;"><nav style="background:#1a73e8;padding:15px;color:white;display:flex;justify-content:space-between;"><b>BrandName</b><div>Home | About</div></nav><header style="padding:100px 20px;text-align:center;background:#e8f0fe;"><h1>Sizning biznesingiz uchun eng yaxshi yechim</h1><button style="padding:15px 30px;background:#1a73e8;color:white;border:none;border-radius:30px;">Boshlash</button></header></body></html>';
       case ProjectTemplate.contact:
         return '<html><head><title>Contact Us</title></head><body style="font-family:sans-serif;padding:50px;background:#f4f4f4;"><div style="max-width:500px;margin:auto;background:white;padding:30px;border-radius:10px;"><h2>Bog\'lanish</h2><input type="text" placeholder="Ism" style="width:100%;padding:10px;margin:10px 0;"><textarea style="width:100%;padding:10px;height:100px;"></textarea><button style="width:100%;padding:15px;background:green;color:white;border:none;">Yuborish</button></div></body></html>';
+      case ProjectTemplate.blog:
+        return '<html><head><title>Blog Sahifasi</title></head><body style="margin:0;font-family:\'Segoe UI\',Tahoma,Geneva,Verdana,sans-serif;background:#f8f9fa;color:#333;line-height:1.6;"><header style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:60px 20px;text-align:center;"><h1 style="margin:0;font-size:3rem;">Mening Blogim</h1><p style="margin:10px 0 0;font-size:1.2rem;opacity:0.9;">Dasturlash va texnologiyalar haqida maqolalar</p></header><div style="max-width:800px;margin:40px auto;padding:0 20px;display:grid;grid-template-columns:1fr;gap:30px;"><article style="background:white;border-radius:10px;box-shadow:0 2px 15px rgba(0,0,0,0.1);padding:30px;transition:transform 0.3s ease,box-shadow 0.3s ease;"><div style="color:#667eea;font-size:0.9rem;font-weight:bold;margin-bottom:10px;">MAY 15, 2024 • WEB DASTURLASH</div><h2 style="margin:10px 0 15px;color:#2c3e50;font-size:2rem;">Flutter\'da Responsive Dizayn</h2><p style="color:#555;margin-bottom:20px;">Flutter\'da responsive dizayn qanday qilib amalga oshiriladi? Bu maqolada MediaQuery, LayoutBuilder va Flexible widget\'laridan foydalanishni o\'rganamiz...</p><a href="#" style="color:#667eea;text-decoration:none;font-weight:bold;display:inline-flex;align-items:center;gap:8px;transition:gap 0.3s ease;">Batafsil ></a></article><article style="background:white;border-radius:10px;box-shadow:0 2px 15px rgba(0,0,0,0.1);padding:30px;transition:transform 0.3s ease,box-shadow 0.3s ease;"><div style="color:#667eea;font-size:0.9rem;font-weight:bold;margin-bottom:10px;">MAY 10, 2024 • DATABASE</div><h2 style="margin:10px 0 15px;color:#2c3e50;font-size:2rem;">Firebase Cloud Firestore</h2><p style="color:#555;margin-bottom:20px;">NoSQL ma\'lumotlar bazasi sifatida Cloud Firestore\'niki afzalliklari va qo\'llash usullari. Real-time sinxronizatsiya va offline rejim...</p><a href="#" style="color:#667eea;text-decoration:none;font-weight:bold;display:inline-flex;align-items:center;gap:8px;transition:gap 0.3s ease;">Batafsil ></a></article><article style="background:white;border-radius:10px;box-shadow:0 2px 15px rgba(0,0,0,0.1);padding:30px;transition:transform 0.3s ease,box-shadow 0.3s ease;"><div style="color:#667eea;font-size:0.9rem;font-weight:bold;margin-bottom:10px;">MAY 5, 2024 • STATE MANAGEMENT</div><h2 style="margin:10px 0 15px;color:#2c3e50;font-size:2rem;">Provider vs Bloc</h2><p style="color:#555;margin-bottom:20px;">Flutter\'da state management uchun eng mashhur usullarni taqqoslash. Providerning oddiyligi va Blocning skaliyatsiyasi...</p><a href="#" style="color:#667eea;text-decoration:none;font-weight:bold;display:inline-flex;align-items:center;gap:8px;transition:gap 0.3s ease;">Batafsil ></a></article></div></body></html>';
+      case ProjectTemplate.shop:
+        return '<html><head><title>Shop</title></head><body style="margin:0;font-family:sans-serif;background:#f5f5f5;"><header style="background:#1a73e8;color:white;padding:20px;text-align:center;"><h1>Mening Do\'konim</h1></header><div style="padding:20px;max-width:1200px;margin:auto;"><h2>Mahsulotlar</h2><p>Bu yerda mahsulotlar ko\'rsatiladi.</p></div></body></html>';
       default:
         return '<html><head></head><body></body></html>';
     }
